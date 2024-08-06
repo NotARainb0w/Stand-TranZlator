@@ -1,7 +1,4 @@
 # TranZlater
-
-## English
-
 Welcome to **TranZlater**!
 
 Damn, I'm too lazy to write a damn description after coding this shit!
