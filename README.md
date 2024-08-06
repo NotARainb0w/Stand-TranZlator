@@ -19,5 +19,8 @@ All you need to know: It translates other people's chats into any language ;)
 - **Weird Translations?**: Blame Google Translate. It has a mind of its own.
 - **Annoying Toast Messages?**: That's just the script's way of showing love.
 
+### Known Bugs
+- No bugs, send me a message on Discord (notcracky) if you found a bug
+
 ### Disclaimer
 TranZlater is not responsible for any miscommunications, hilarious mistranslations, or general chaos that may ensue. Use at your own risk!
