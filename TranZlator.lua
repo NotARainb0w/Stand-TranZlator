@@ -1,8 +1,9 @@
---------------------------------------------------
--- TranZlater
+-------------------------------------
+-- TranZlator by Cracky
 -- Version: 1.0
--- Author: Cracky
--- https://github.com/Cracky0001/Stand-TranZlater
+-- GitHub: https://github.com/Cracky0001/Stand-TranZlater
+-------------------------------------
+
 --------------------------------------------------
 -- Load natives
 --------------------------------------------------
@@ -16,10 +17,9 @@ local json = require('json')
 --------------------------------------------------
 -- Global variables
 --------------------------------------------------
+local verNum = "1.0"
 local targetLang = "en"
 local autoTranslateEnabled = true
-local showOriginalText = false
-
 --------------------------------------------------
 -- Function to URL encode a string
 --------------------------------------------------
@@ -61,6 +61,33 @@ end
 --------------------------------------------------
 local function getPlayerName(player_id)
     return PLAYER.GET_PLAYER_NAME(player_id)
+end
+
+--------------------------------------------------
+-- Function to draw a solid background
+--------------------------------------------------
+local function draw_background(x, y, width, height, color)
+    directx.draw_rect(x, y, width, height, color)
+end
+
+--------------------------------------------------
+-- Function to display a welcome graphic. Damn, i hate this function.
+--------------------------------------------------
+local function display_welcome_graphic()
+    local display_duration = 3000 
+    local start_time = util.current_time_millis()
+
+    while util.current_time_millis() - start_time < display_duration do
+        -- Draw solid background rectangle
+        draw_background(0.435, 0.46, 0.13, 0.1, {r = 0.0, g = 0.0, b = 0.0, a = 1})
+
+        -- Draw welcome text
+        directx.draw_text(0.5, 0.49, "TranZlator", 5, 1.2, {r = 1.0, g = 1.0, b = 1.0, a = 1.0}, true)
+        directx.draw_text(0.5, 0.515, "Version"  .. verNum, 5, 0.8, {r = 0, g = 1.0, b = 0, a = 1.0}, true)
+        directx.draw_text(0.5, 0.54, "Created by Cracky", 5, 0.6, {r = 1.0, g = 1.0, b = 1.0, a = 1.0}, true)
+
+        util.yield()
+    end
 end
 
 --------------------------------------------------
@@ -107,12 +134,8 @@ menu.list_select(settingsCategory, "Target Language", {}, "Select the target lan
     targetLang = languages[index].code
 end)
 
-menu.toggle(settingsCategory, "Automatic Translation", {}, "Enable or disable automatic translation of chat messages", function() return autoTranslateEnabled end, function(value)
+menu.toggle(settingsCategory, "Enable/Disable Translation", {"translate"}, "Enable or disable automatic translation of chat messages", function() return autoTranslateEnabled end, function(value)
     autoTranslateEnabled = value
-end)
-
-menu.toggle(settingsCategory, "Show Original Text", {}, "Show the original text along with the translation", function() return showOriginalText end, function(value)
-    showOriginalText = value
 end)
 
 --------------------------------------------------
@@ -124,12 +147,7 @@ chat.on_message(function(sender, team, message)
 
     if autoTranslateEnabled then
         translateText(message, targetLang, function(translatedMessage)
-            local displayMessage
-            if showOriginalText then
-                displayMessage = string.format("%s\n[Translated] %s", formatted_message, translatedMessage)
-            else
-                displayMessage = string.format("[Translated] %s", translatedMessage)
-            end
+            local displayMessage = string.format("[TranZlated] %s: %s", sender_name, translatedMessage)
             util.toast(displayMessage, TOAST_ALL)  -- Display the translated message as a toast notification
         end)
     end
@@ -163,6 +181,7 @@ end
 -- Main function to initialize the script
 --------------------------------------------------
 local function main()
+    display_welcome_graphic()
     initialize_log_and_check_internet()
 end
 
