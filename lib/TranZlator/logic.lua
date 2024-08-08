@@ -21,22 +21,26 @@ function getPlayerName(player_id)
     return PLAYER.GET_PLAYER_NAME(player_id)
 end
 
--- Function to display message in local feed
-function display_message_in_local_feed(message)
+-- Function to display message in local feed with player icon
+function display_message_in_local_feed(message, player_id)
     local prefix = "[TranZlated] "
     local full_message = prefix .. message
 
-    -- Use the native function to display the message in local feed
+    -- Use the native function to display the message in local feed with player icon
+    local icon_type = 1  -- Example icon type, you can change this as needed
+    local icon_texture = "CHAR_DEFAULT"
+    local player_name = getPlayerName(player_id)
+
     HUD.THEFEED_SET_BACKGROUND_COLOR_FOR_NEXT_POST(200)  -- Setting background color to light blue
     HUD.BEGIN_TEXT_COMMAND_THEFEED_POST("STRING")
     HUD.ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(full_message)
+    HUD.END_TEXT_COMMAND_THEFEED_POST_MESSAGETEXT(icon_texture, icon_texture, false, icon_type, player_name, "")
     HUD.END_TEXT_COMMAND_THEFEED_POST_TICKER(false, true)
 end
 
--- Function to display message in local chat
+-- Function to display message in local feed
 function display_message_in_local_chat(message)
-    local prefix = "[TranZlated] "
-    local full_message = prefix .. message
+    local full_message = message
     chat.send_message(full_message, false, true, true)  -- Send only to the local player
 end
 
@@ -49,16 +53,16 @@ end
 -- Function to handle chat messages
 chat.on_message(function(sender, team, message)
     local sender_name = getPlayerName(sender)
-    local formatted_message = string.format("[%s] %s: %s", team, sender_name, message)
+    local formatted_message = string.format("%s: %s", sender_name, message)
 
     if autoTranslateEnabled then
         local translationCallback = function(translatedMessage)
-            local displayMessage = string.format("%s: %s", sender_name, translatedMessage)
+            local displayMessage = translatedMessage  -- Only the translated message without the sender name
             if displayOption == "Stand Notify" or displayOption == "Both" then
                 display_message_in_stand_notify(displayMessage)  -- Display the translated message in Stand notify with header
             end
             if displayOption == "GTA Notify" or displayOption == "Both" then
-                display_message_in_local_feed(displayMessage)  -- Display the translated message in the local feed
+                display_message_in_local_feed(displayMessage, sender)  -- Display the translated message in the local feed with player icon
             end
         end
 

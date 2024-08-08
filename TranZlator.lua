@@ -2,7 +2,7 @@
 
 -------------------------------------
 -- TranZlator by Cracky
--- Version: 1.1.1 (Pre)
+-- Version: 1.2 (Pre)
 -- GitHub: https://github.com/Cracky0001/Stand-TranZlator
 -------------------------------------
 
@@ -14,7 +14,7 @@ require('lib.TranZlator.welcomegraphic')
 require('lib.TranZlator.logic')
 
 -- Global variables
-verNum = "1.1.1 (Pre)"
+verNum = "1.2 (Pre)"
 targetLang = "en"
 autoTranslateEnabled = true
 selectedAPI = "Google"
