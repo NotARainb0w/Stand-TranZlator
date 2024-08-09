@@ -40,6 +40,31 @@ local function download_file(host, path, save_path)
     async_http.dispatch()
 end
 
+-- Funktion zum Überprüfen, ob alle erforderlichen Dateien vorhanden sind
+local function check_files_exist()
+    util.log("check_files_exist aufgerufen") -- Logge den Aufruf der Funktion
+    local script_dir = filesystem.scripts_dir() -- Erhalte das Skriptverzeichnis
+    local files_to_check = {
+        "TranZlator.lua",
+        "lib/TranZlator/logic.lua",
+        "lib/TranZlator/menu.lua",
+        "lib/TranZlator/welcomegraphic.lua",
+        "lib/TranZlator/TranslatorAPIs/deepl.lua",
+        "lib/TranZlator/TranslatorAPIs/google.lua"
+    }
+
+    for _, file_path in ipairs(files_to_check) do
+        local file = io.open(script_dir .. "/" .. file_path, "r")
+        if not file then
+            util.log("Fehlende Datei: " .. file_path) -- Logge fehlende Dateien
+            return false  -- Datei fehlt
+        else
+            file:close()
+        end
+    end
+    return true  -- Alle Dateien sind vorhanden
+end
+
 -- Funktion zum Vergleich von Versionsnummern
 local function compare_versions(version_a, version_b)
     local major_a, minor_a, patch_a = version_a:match("(%d+)%.(%d+)%.(%d+)")
@@ -56,67 +81,6 @@ local function compare_versions(version_a, version_b)
     end
 
     return false
-end
-
--- Funktion zur Überprüfung und zum Vergleich der Version
-local function check_for_update(current_version)
-    local path = update_base_url_path_root .. "TranZlator.lua"
-    async_http.init(update_base_url_root, path, function(body, headers, status_code)
-        if status_code == 200 then
-            -- Logge den gesamten Inhalt der heruntergeladenen Datei
-            util.log("Response Body: " .. body)
-            
-            -- Extrahiere die Versionsnummer (nur numerischer Teil)
-            local remote_version = body:match("verNum%s*=%s*\"(%d+%.%d+%.%d+)")
-            
-            if remote_version then
-                util.log("Extracted remote version: " .. remote_version)
-                if compare_versions(remote_version, current_version) then
-                    util.toast("Neue Version gefunden: " .. remote_version .. ". Update wird durchgeführt...")
-                    perform_update()
-                elseif compare_versions(current_version, remote_version) then
-                    util.toast("Du nutzt eine Entwicklerversion (" .. current_version .. "), die noch nicht veröffentlicht wurde.")
-                else
-                    if not check_files_exist() then
-                        util.toast("Fehlende Datei entdeckt. Update wird durchgeführt...")
-                        perform_update()
-                    else
-                        util.toast("Du verwendest die neueste Version.")
-                    end
-                end
-            else
-                util.toast("Fehler beim Überprüfen der Version. Version konnte nicht aus der Antwort extrahiert werden.")
-                util.log("Regex konnte die Version nicht extrahieren.")
-            end
-        else
-            util.toast("Fehler beim Überprüfen der Version - HTTP Status: " .. tostring(status_code))
-        end
-    end, function()
-        util.toast("Fehler beim Überprüfen der Version.")
-    end)
-    async_http.dispatch()
-end
-
--- Funktion zum Überprüfen, ob alle erforderlichen Dateien vorhanden sind
-local function check_files_exist()
-    local files_to_check = {
-        "TranZlator.lua",
-        "lib/TranZlator/logic.lua",
-        "lib/TranZlator/menu.lua",
-        "lib/TranZlator/welcomegraphic.lua",
-        "lib/TranZlator/TranslatorAPIs/deepl.lua",
-        "lib/TranZlator/TranslatorAPIs/google.lua"
-    }
-
-    for _, file_path in ipairs(files_to_check) do
-        local file = io.open(util.get_script_path() .. "/" .. file_path, "r")
-        if not file then
-            return false  -- Datei fehlt
-        else
-            file:close()
-        end
-    end
-    return true  -- Alle Dateien sind vorhanden
 end
 
 -- Funktion zum Überprüfen, ob alle benötigten URLs existieren
@@ -149,6 +113,7 @@ end
 
 -- Funktion zum Durchführen des Updates
 local function perform_update()
+    util.log("perform_update aufgerufen") -- Logge den Aufruf der Funktion
     local files_to_update = {
         ["TranZlator.lua"] = "TranZlator.lua",
         ["lib/TranZlator/logic.lua"] = "lib/TranZlator/logic.lua",
@@ -158,12 +123,51 @@ local function perform_update()
         ["lib/TranZlator/TranslatorAPIs/google.lua"] = "lib/TranZlator/TranslatorAPIs/google.lua"
     }
 
+    local script_dir = filesystem.scripts_dir() -- Erhalte das Skriptverzeichnis
     for file_path, local_path in pairs(files_to_update) do
         local host = update_base_url_root
         local path = file_path == "TranZlator.lua" and update_base_url_path_root .. file_path or update_base_url_path_lib .. file_path
-        local save_path = util.get_script_path() .. "/" .. local_path
+        local save_path = script_dir .. "/" .. local_path
         download_file(host, path, save_path)
     end
+end
+
+-- Funktion zur Überprüfung und zum Vergleich der Version
+local function check_for_update(current_version)
+    local path = update_base_url_path_root .. "TranZlator.lua"
+    async_http.init(update_base_url_root, path, function(body, headers, status_code)
+        if status_code == 200 then
+            util.log("Response Body: " .. body)
+            local remote_version = body:match("verNum%s*=%s*\"(%d+%.%d+%.%d+)\"")
+            
+            if remote_version then
+                util.log("Extracted remote version: " .. remote_version)
+                if compare_versions(remote_version, current_version) then
+                    util.toast("Neue Version gefunden: " .. remote_version .. ". Update wird durchgeführt...")
+                    perform_update()
+                elseif compare_versions(current_version, remote_version) then
+                    util.toast("Du nutzt eine Entwicklerversion (" .. current_version .. "), die noch nicht veröffentlicht wurde.")
+                else
+                    local files_exist = check_files_exist() -- Direkt aufrufen und in Variable speichern
+                    util.log("Dateien vorhanden: " .. tostring(files_exist)) -- Logge den Status der Dateiüberprüfung
+                    if not files_exist then
+                        util.toast("Fehlende Datei entdeckt. Update wird durchgeführt...")
+                        perform_update()
+                    else
+                        util.toast("Du verwendest die neueste Version.")
+                    end
+                end
+            else
+                util.toast("Fehler beim Überprüfen der Version. Version konnte nicht aus der Antwort extrahiert werden.")
+                util.log("Regex konnte die Version nicht extrahieren.")
+            end
+        else
+            util.toast("Fehler beim Überprüfen der Version - HTTP Status: " .. tostring(status_code))
+        end
+    end, function()
+        util.toast("Fehler beim Überprüfen der Version.")
+    end)
+    async_http.dispatch()
 end
 
 -- Hauptfunktion zum Starten der Update-Prozedur
