@@ -17,7 +17,7 @@ require('lib.TranZlator.logic')
 local updater = require('lib.TranZlator.updater')
 
 -- Global variables
-verNum = "1.2.2"  -- The current version of the script
+verNum = "0.999.0"  -- The current version of the script
 targetLang = "en"
 autoTranslateEnabled = true
 selectedAPI = "Google"
