@@ -85,9 +85,9 @@ end
 function send_translated_message(message, target_language, send_to_all_chat)
     local translationCallback = function(translatedMessage)
         if send_to_all_chat then
-            chat.send_message(translatedMessage, false, true, false)  -- Send message to All Chat
+            chat.send_message(translatedMessage, false, true, true)  -- Send message to All Chat
         else
-            chat.send_message(translatedMessage, true, true, false)  -- Send message to Team Chat
+            chat.send_message(translatedMessage, true, true, true)  -- Send message to Team Chat
         end
         log_message_to_console(translatedMessage)
     end
