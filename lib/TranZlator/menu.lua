@@ -72,15 +72,15 @@ menu.list_select(customMessageCategory, "Target Language", {}, "Select the targe
     customMessageTargetLang = languages[index].code
 end)
 
--- Menüoption zur Auswahl des Ziel-Chats
+-- Menu option to select the target chat
 menu.list_select(customMessageCategory, "Send Message To", {}, "Select whether to send the message to Team Chat or All Chat", {"Team Chat", "All Chat"}, 1, function(index)
     selectedChatOption = index
 end)
 
--- Menüoption für die Eingabe der Nachricht
+-- Menu option to input the message
 menu.text_input(customMessageCategory, "Message", {"transmessage"}, "Enter the message to be translated and sent", function(value)
-    -- Der Wert `selectedChatOption` ist 1 für Team Chat und 2 für All Chat
-    local send_to_all_chat = (selectedChatOption == 2)  -- Wenn 2, sende an All Chat, sonst Team Chat
+    -- The value `selectedChatOption` is 1 for Team Chat and 2 for All Chat
+    local send_to_all_chat = (selectedChatOption == 2)  -- If 2, send to All Chat, otherwise Team Chat
     send_translated_message(value, customMessageTargetLang, send_to_all_chat)
 end)
 

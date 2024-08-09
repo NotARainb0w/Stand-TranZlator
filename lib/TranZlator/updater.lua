@@ -1,11 +1,12 @@
 -- scripts/lib/TranZlator/updater.lua
 
--- URLs zu den Skripten auf GitHub
+-- URLs for the scripts on GitHub
 local update_base_url_root = "raw.githubusercontent.com"
 local update_base_url_path_root = "/Cracky0001/Stand-TranZlator/main/"
-local update_base_url_path_lib = "/Cracky0001/Stand-TranZlator/main/lib/TranZlator/"
+local update_base_url_path_lib = "lib/TranZlator/"
+local update_base_url_path_apis = update_base_url_path_lib .. "TranslatorAPIs/"
 
--- Funktion zum Überprüfen, ob eine URL existiert
+-- Function to check if a URL exists
 local function url_exists(host, path, callback)
     async_http.init(host, path, function(body, headers, status_code)
         if status_code == 200 then
@@ -19,31 +20,30 @@ local function url_exists(host, path, callback)
     async_http.dispatch()
 end
 
--- Funktion zum Herunterladen von Inhalten von einer URL
-local function download_file(host, path, save_path)
+-- Function to download content from a URL
+local function download_file(host, path, save_path, callback)
     async_http.init(host, path, function(body, headers, status_code)
         if status_code == 200 then
             local file = io.open(save_path, "w")
             if file then
                 file:write(body)
                 file:close()
-                util.toast("Datei " .. save_path .. " erfolgreich aktualisiert!")
+                callback(true)
             else
-                util.toast("Fehler beim Öffnen der Datei " .. save_path)
+                callback(false)
             end
         else
-            util.toast("Fehler beim Herunterladen von " .. path .. " - HTTP Status: " .. tostring(status_code))
+            callback(false)
         end
     end, function()
-        util.toast("Fehler beim Herunterladen von " .. path)
+        callback(false)
     end)
     async_http.dispatch()
 end
 
--- Funktion zum Überprüfen, ob alle erforderlichen Dateien vorhanden sind
+-- Function to check if all required files exist
 local function check_files_exist()
-    util.log("check_files_exist aufgerufen") -- Logge den Aufruf der Funktion
-    local script_dir = filesystem.scripts_dir() -- Erhalte das Skriptverzeichnis
+    local script_dir = filesystem.scripts_dir()
     local files_to_check = {
         "TranZlator.lua",
         "lib/TranZlator/logic.lua",
@@ -56,16 +56,15 @@ local function check_files_exist()
     for _, file_path in ipairs(files_to_check) do
         local file = io.open(script_dir .. "/" .. file_path, "r")
         if not file then
-            util.log("Fehlende Datei: " .. file_path) -- Logge fehlende Dateien
-            return false  -- Datei fehlt
+            return false
         else
             file:close()
         end
     end
-    return true  -- Alle Dateien sind vorhanden
+    return true
 end
 
--- Funktion zum Vergleich von Versionsnummern
+-- Function to compare version numbers
 local function compare_versions(version_a, version_b)
     local major_a, minor_a, patch_a = version_a:match("(%d+)%.(%d+)%.(%d+)")
     local major_b, minor_b, patch_b = version_b:match("(%d+)%.(%d+)%.(%d+)")
@@ -83,15 +82,15 @@ local function compare_versions(version_a, version_b)
     return false
 end
 
--- Funktion zum Überprüfen, ob alle benötigten URLs existieren
+-- Function to check if all necessary URLs exist
 local function check_urls_exist(callback)
     local files_to_check = {
         update_base_url_path_root .. "TranZlator.lua",
-        update_base_url_path_lib .. "logic.lua",
-        update_base_url_path_lib .. "menu.lua",
-        update_base_url_path_lib .. "welcomegraphic.lua",
-        update_base_url_path_lib .. "TranslatorAPIs/deepl.lua",
-        update_base_url_path_lib .. "TranslatorAPIs/google.lua"
+        update_base_url_path_root .. update_base_url_path_lib .. "logic.lua",
+        update_base_url_path_root .. update_base_url_path_lib .. "menu.lua",
+        update_base_url_path_root .. update_base_url_path_lib .. "welcomegraphic.lua",
+        update_base_url_path_root .. update_base_url_path_apis .. "deepl.lua",
+        update_base_url_path_root .. update_base_url_path_apis .. "google.lua"
     }
 
     local all_exist = true
@@ -101,7 +100,6 @@ local function check_urls_exist(callback)
         url_exists(update_base_url_root, path, function(exists)
             checked = checked + 1
             if not exists then
-                util.toast("Fehler: Datei nicht gefunden - " .. path, TOAST_ALL)
                 all_exist = false
             end
             if checked == #files_to_check then
@@ -111,77 +109,90 @@ local function check_urls_exist(callback)
     end
 end
 
--- Funktion zum Durchführen des Updates
+-- Function to perform the update
 local function perform_update()
-    util.log("perform_update aufgerufen") -- Logge den Aufruf der Funktion
     local files_to_update = {
         ["TranZlator.lua"] = "TranZlator.lua",
-        ["lib/TranZlator/logic.lua"] = "lib/TranZlator/logic.lua",
-        ["lib/TranZlator/menu.lua"] = "lib/TranZlator/menu.lua",
-        ["lib/TranZlator/welcomegraphic.lua"] = "lib/TranZlator/welcomegraphic.lua",
-        ["lib/TranZlator/TranslatorAPIs/deepl.lua"] = "lib/TranZlator/TranslatorAPIs/deepl.lua",
-        ["lib/TranZlator/TranslatorAPIs/google.lua"] = "lib/TranZlator/TranslatorAPIs/google.lua"
+        ["logic.lua"] = "lib/TranZlator/logic.lua",
+        ["menu.lua"] = "lib/TranZlator/menu.lua",
+        ["welcomegraphic.lua"] = "lib/TranZlator/welcomegraphic.lua",
+        ["deepl.lua"] = "lib/TranZlator/TranslatorAPIs/deepl.lua",
+        ["google.lua"] = "lib/TranZlator/TranslatorAPIs/google.lua"
     }
 
-    local script_dir = filesystem.scripts_dir() -- Erhalte das Skriptverzeichnis
-    for file_path, local_path in pairs(files_to_update) do
+    local script_dir = filesystem.scripts_dir()
+    local errors = {}
+
+    local function check_completion()
+        if #errors > 0 then
+            util.toast("Failed to update the following files: " .. table.concat(errors, ", "), TOAST_ALL)
+        else
+            util.toast("All files updated successfully! Please restart the script.", TOAST_ALL)
+        end
+    end
+
+    local files_checked = 0
+
+    for file_name, local_path in pairs(files_to_update) do
         local host = update_base_url_root
-        local path = file_path == "TranZlator.lua" and update_base_url_path_root .. file_path or update_base_url_path_lib .. file_path
+        local path = file_name == "TranZlator.lua" and update_base_url_path_root .. file_name or (file_name == "deepl.lua" or file_name == "google.lua") and update_base_url_path_root .. update_base_url_path_apis .. file_name or update_base_url_path_root .. update_base_url_path_lib .. file_name
         local save_path = script_dir .. "/" .. local_path
-        download_file(host, path, save_path)
+
+        download_file(host, path, save_path, function(success)
+            files_checked = files_checked + 1
+            if not success then
+                table.insert(errors, local_path)
+            end
+            if files_checked == #files_to_update then
+                check_completion()
+            end
+        end)
     end
 end
 
--- Funktion zur Überprüfung und zum Vergleich der Version
+-- Function to check and compare versions
 local function check_for_update(current_version)
     local path = update_base_url_path_root .. "TranZlator.lua"
     async_http.init(update_base_url_root, path, function(body, headers, status_code)
         if status_code == 200 then
-            util.log("Response Body: " .. body)
             local remote_version = body:match("verNum%s*=%s*\"(%d+%.%d+%.%d+)\"")
             
             if remote_version then
-                util.log("Extracted remote version: " .. remote_version)
                 if compare_versions(remote_version, current_version) then
-                    util.toast("Neue Version gefunden: " .. remote_version .. ". Update wird durchgeführt...")
                     perform_update()
                 elseif compare_versions(current_version, remote_version) then
-                    util.toast("Du nutzt eine Entwicklerversion (" .. current_version .. "), die noch nicht veröffentlicht wurde.")
+                    util.toast("You are using a developer version (" .. current_version .. ") that has not yet been released.")
                 else
-                    local files_exist = check_files_exist() -- Direkt aufrufen und in Variable speichern
-                    util.log("Dateien vorhanden: " .. tostring(files_exist)) -- Logge den Status der Dateiüberprüfung
-                    if not files_exist then
-                        util.toast("Fehlende Datei entdeckt. Update wird durchgeführt...")
+                    if not check_files_exist() then
                         perform_update()
                     else
-                        util.toast("Du verwendest die neueste Version.")
+                        util.toast("You are using the latest version.")
                     end
                 end
             else
-                util.toast("Fehler beim Überprüfen der Version. Version konnte nicht aus der Antwort extrahiert werden.")
-                util.log("Regex konnte die Version nicht extrahieren.")
+                util.toast("Failed to check the version. Version could not be extracted from the response.")
             end
         else
-            util.toast("Fehler beim Überprüfen der Version - HTTP Status: " .. tostring(status_code))
+            util.toast("Failed to check the version - HTTP Status: " .. tostring(status_code))
         end
     end, function()
-        util.toast("Fehler beim Überprüfen der Version.")
+        util.toast("Failed to check the version.")
     end)
     async_http.dispatch()
 end
 
--- Hauptfunktion zum Starten der Update-Prozedur
+-- Main function to start the update process
 local function main(current_version)
     check_urls_exist(function(all_exist)
         if all_exist then
             check_for_update(current_version)
         else
-            util.toast("Einige Dateien konnten nicht gefunden werden. Überprüfen Sie die URLs.", TOAST_ALL)
+            util.toast("Some files could not be found. Please check the URLs.", TOAST_ALL)
         end
     end)
 end
 
--- Exportiere die Funktion, damit sie von TranZlator.lua aufgerufen werden kann
+-- Export the function so that it can be called from TranZlator.lua
 return {
     check_for_update = main
 }

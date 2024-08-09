@@ -1,12 +1,12 @@
 -- scripts/lib/TranZlator/logic.lua
 
--- Globale Einstellungen
+-- Global settings
 autoTranslateEnabled = true
-displayOption = "Both"  -- Standardmäßig werden beide Benachrichtigungen angezeigt
-selectedAPI = "Google"  -- Standardmäßig Google Translate
-targetLang = "en"  -- Standardmäßig Englisch
+displayOption = "Both"  -- By default, both notifications are shown
+selectedAPI = "Google"  -- Default is Google Translate
+targetLang = "en"  -- Default language is English
 
--- Funktion zum URL-Encoding eines Strings
+-- Function to URL-encode a string
 function encode_url(str)
     if (str) then
         str = string.gsub(str, "\n", "\r\n")
@@ -18,46 +18,46 @@ function encode_url(str)
     return str
 end
 
--- Laden der spezifischen Übersetzungslogik
+-- Load specific translation logic
 require('lib.TranZlator.TranslatorAPIs.google')
 require('lib.TranZlator.TranslatorAPIs.deepl')
 
--- Funktion, um den Spielernamen anhand der Spieler-ID zu erhalten
+-- Function to get the player's name based on their player ID
 function getPlayerName(player_id)
     return PLAYER.GET_PLAYER_NAME(player_id)
 end
 
--- Funktion, um die lokale Spieler-ID zu erhalten
+-- Function to get the local player ID
 function getLocalPlayerID()
     return PLAYER.PLAYER_ID()
 end
 
--- Funktion, um Nachrichten im lokalen Feed anzuzeigen
+-- Function to display messages in the local feed
 function display_message_in_local_feed(message, sender_name)
     local prefix = "[TranZlated] "
     local full_message = prefix .. message
 
-    -- Native Funktion verwenden, um die Nachricht im lokalen Feed mit Spieler-Icon anzuzeigen
-    HUD.THEFEED_SET_BACKGROUND_COLOR_FOR_NEXT_POST(200)  -- Hintergrundfarbe auf Hellblau setzen
+    -- Use native function to display the message in the local feed with player icon
+    HUD.THEFEED_SET_BACKGROUND_COLOR_FOR_NEXT_POST(200)  -- Set background color to light blue
     HUD.BEGIN_TEXT_COMMAND_THEFEED_POST("STRING")
     HUD.ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(full_message)
     HUD.END_TEXT_COMMAND_THEFEED_POST_MESSAGETEXT_WITH_CREW_TAG("CHAR_MP_STRIPCLUB_PR", "CHAR_MP_STRIPCLUB_PR", false, 4, sender_name, "", 1.0, "")
     HUD.END_TEXT_COMMAND_THEFEED_POST_TICKER(false, true)
 end
 
--- Funktion, um Nachrichten in der Stand-Benachrichtigung mit Überschrift anzuzeigen
+-- Function to display messages in the Stand notification with a header
 function display_message_in_stand_notify(sender_name, message)
     local header = "[TranZlator]"
     local full_message = string.format("%s: %s", sender_name, message)
     util.toast(header .. "\n" .. full_message, TOAST_ALL)
 end
 
--- Funktion zum Protokollieren von Nachrichten in der Konsole
+-- Function to log messages to the console
 function log_message_to_console(message)
     util.log("[TranZlator] " .. message)
 end
 
--- Funktion zur Verarbeitung von Chat-Nachrichten
+-- Function to process chat messages
 function handle_chat_message(sender, team, message)
     local sender_name = getPlayerName(sender)
     local formatted_message = string.format("[%s] %s: %s", team, sender_name, message)
@@ -81,18 +81,18 @@ function handle_chat_message(sender, team, message)
     end
 end
 
--- Funktion zum Übersetzen und Senden einer benutzerdefinierten Nachricht
+-- Function to translate and send a custom message
 function send_translated_message(message, target_language, send_to_all_chat)
     local translationCallback = function(translatedMessage)
         if send_to_all_chat then
-            chat.send_message(translatedMessage, false, true, false)  -- Nachricht an All Chat senden
+            chat.send_message(translatedMessage, false, true, false)  -- Send message to All Chat
         else
-            chat.send_message(translatedMessage, true, true, false)  -- Nachricht an Team Chat senden
+            chat.send_message(translatedMessage, true, true, false)  -- Send message to Team Chat
         end
         log_message_to_console(translatedMessage)
     end
 
-    -- Auswahl der Übersetzungs-API
+    -- API choice check
     if selectedAPI == "DeepL" and deepLApiKey ~= "" then
         translateWithDeepL(message, target_language, deepLApiKey, translationCallback)
     else
@@ -100,14 +100,14 @@ function send_translated_message(message, target_language, send_to_all_chat)
     end
 end
 
--- Funktion zur Initialisierung der Protokollnachricht und Überprüfung des Internetzugangs
+-- Initialize log and check internet connection
 function initialize_log_and_check_internet()
     async_http.init("https://www.google.com", "/", function(body, headers, status_code)
         if status_code ~= 200 then
             util.toast("Enable internet connection for this script!")
             while true do
                 util.toast("Enable internet connection for this script!", TOAST_ALL)
-                util.yield(100)  -- Wiederholen alle 100 ms
+                util.yield(100)  
             end
         else
             util.toast("Chat logging initialized.")
@@ -116,11 +116,11 @@ function initialize_log_and_check_internet()
         util.toast("Enable internet connection for this script!")
         while true do
             util.toast("Enable internet connection for this script!", TOAST_ALL)
-            util.yield(100)  -- Wiederholen alle 100 ms
+            util.yield(100)  
         end
     end)
     async_http.dispatch()
 end
 
--- Registriere den Chat-Nachrichten-Handler
+-- Register the chat message handler
 chat.on_message(handle_chat_message)
