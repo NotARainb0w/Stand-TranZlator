@@ -8,7 +8,8 @@ local settingsCategory = menu.list(rootMenu, "Settings", {}, "Configure the Tran
 local translationSettingsCategory = menu.list(settingsCategory, "Translation Settings", {}, "Manage translation settings.")
 local apiSettingsCategory = menu.list(settingsCategory, "API Settings", {}, "Configure API keys and settings.")
 local displaySettingsCategory = menu.list(settingsCategory, "Display Settings", {}, "Manage display options for notifications.")
-
+local customMessageCategory = menu.list(rootMenu, "Custom Message", {}, "Translate and send a custom message.")
+local credits = menu.list(rootMenu, "Credits", {}, "View credits and additional information about TranZlator.")
 -- Translation Settings
 local languages = {
     {code="en", name="English"},
@@ -60,3 +61,18 @@ local displayOptions = {"Stand Notify", "GTA Notify", "Both"}
 menu.list_select(displaySettingsCategory, "Display Notification In", {}, "Select where to display the translated notification", displayOptions, 1, function(index)
     displayOption = displayOptions[index]
 end)
+
+-- Custom Message
+local customMessageTargetLang = "en"
+menu.list_select(customMessageCategory, "Target Language", {}, "Select the target language for the custom message", langNames, 1, function(index)
+    customMessageTargetLang = languages[index].code
+end)
+
+menu.text_input(customMessageCategory, "Message", {"customMessage"}, "Enter the message to be translated and sent", function(value)
+    send_translated_message(value, customMessageTargetLang)
+end)
+
+-- hyperlink to the GitHub repository and Cracky's LinkHub
+menu.hyperlink(credits, "GitHub Repository", "https://github.com/Cracky0001/Stand-TranZlator", "Visit the GitHub repository for TranZlator.")
+
+menu.hyperlink(credits, "Cracky's LinkHub", "https://home.cracky-drinks.vodka", "Visit Cracky's LinkHub for more scripts and resources.")
