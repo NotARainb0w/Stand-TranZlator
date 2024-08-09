@@ -8,8 +8,9 @@ local settingsCategory = menu.list(rootMenu, "Settings", {}, "Configure the Tran
 local translationSettingsCategory = menu.list(settingsCategory, "Translation Settings", {}, "Manage translation settings.")
 local apiSettingsCategory = menu.list(settingsCategory, "API Settings", {}, "Configure API keys and settings.")
 local displaySettingsCategory = menu.list(settingsCategory, "Display Settings", {}, "Manage display options for notifications.")
-local customMessageCategory = menu.list(rootMenu, "Custom Message", {}, "Translate and send a custom message.")
-local credits = menu.list(rootMenu, "Credits", {}, "View credits and additional information about TranZlator.")
+local customMessageCategory = menu.list(rootMenu, "Custom Message", {}, "Translate and send a custom message.")  -- Moved to root
+local credits = menu.list(rootMenu, "Credits", {}, "Visit Cracky's LinkHub for more scripts and resources.")
+
 -- Translation Settings
 local languages = {
     {code="en", name="English"},
@@ -64,15 +65,26 @@ end)
 
 -- Custom Message
 local customMessageTargetLang = "en"
+local chatOptions = {"All Chat", "Team Chat"}
+local selectedChatOption = 1  -- Default to "Team Chat"
+
 menu.list_select(customMessageCategory, "Target Language", {}, "Select the target language for the custom message", langNames, 1, function(index)
     customMessageTargetLang = languages[index].code
 end)
 
-menu.text_input(customMessageCategory, "Message", {"customMessage"}, "Enter the message to be translated and sent", function(value)
-    send_translated_message(value, customMessageTargetLang)
+-- Menüoption zur Auswahl des Ziel-Chats
+menu.list_select(customMessageCategory, "Send Message To", {}, "Select whether to send the message to Team Chat or All Chat", {"Team Chat", "All Chat"}, 1, function(index)
+    selectedChatOption = index
 end)
 
--- hyperlink to the GitHub repository and Cracky's LinkHub
-menu.hyperlink(credits, "GitHub Repository", "https://github.com/Cracky0001/Stand-TranZlator", "Visit the GitHub repository for TranZlator.")
+-- Menüoption für die Eingabe der Nachricht
+menu.text_input(customMessageCategory, "Message", {"transmessage"}, "Enter the message to be translated and sent", function(value)
+    -- Der Wert `selectedChatOption` ist 1 für Team Chat und 2 für All Chat
+    local send_to_all_chat = (selectedChatOption == 2)  -- Wenn 2, sende an All Chat, sonst Team Chat
+    send_translated_message(value, customMessageTargetLang, send_to_all_chat)
+end)
 
+-- Credits
 menu.hyperlink(credits, "Cracky's LinkHub", "https://home.cracky-drinks.vodka", "Visit Cracky's LinkHub for more scripts and resources.")
+
+menu.hyperlink(credits, "TranZlator on GitHub", "https://github.com/Cracky0001/Stand-TranZlator", "Visit the GitHub repository for TranZlator.")
