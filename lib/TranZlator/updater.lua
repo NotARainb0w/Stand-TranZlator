@@ -40,6 +40,24 @@ local function download_file(host, path, save_path)
     async_http.dispatch()
 end
 
+-- Funktion zum Vergleich von Versionsnummern
+local function compare_versions(version_a, version_b)
+    local major_a, minor_a, patch_a = version_a:match("(%d+)%.(%d+)%.(%d+)")
+    local major_b, minor_b, patch_b = version_b:match("(%d+)%.(%d+)%.(%d+)")
+
+    if tonumber(major_a) > tonumber(major_b) then
+        return true
+    elseif tonumber(major_a) == tonumber(major_b) then
+        if tonumber(minor_a) > tonumber(minor_b) then
+            return true
+        elseif tonumber(minor_a) == tonumber(minor_b) then
+            return tonumber(patch_a) > tonumber(patch_b)
+        end
+    end
+
+    return false
+end
+
 -- Funktion zur Überprüfung und zum Vergleich der Version
 local function check_for_update(current_version)
     local path = update_base_url_path_root .. "TranZlator.lua"
@@ -47,10 +65,10 @@ local function check_for_update(current_version)
         if status_code == 200 then
             -- Logge den gesamten Inhalt der heruntergeladenen Datei
             util.log("Response Body: " .. body)
-
+            
             -- Extrahiere die Versionsnummer (nur numerischer Teil)
             local remote_version = body:match("verNum%s*=%s*\"(%d+%.%d+%.%d+)")
-
+            
             if remote_version then
                 util.log("Extracted remote version: " .. remote_version)
                 if compare_versions(remote_version, current_version) then
@@ -77,25 +95,6 @@ local function check_for_update(current_version)
         util.toast("Fehler beim Überprüfen der Version.")
     end)
     async_http.dispatch()
-end
-
-
--- Funktion zum Vergleich von Versionsnummern
-local function compare_versions(version_a, version_b)
-    local major_a, minor_a, patch_a = version_a:match("(%d+)%.(%d+)%.(%d+)")
-    local major_b, minor_b, patch_b = version_b:match("(%d+)%.(%d+)%.(%d+)")
-
-    if tonumber(major_a) > tonumber(major_b) then
-        return true
-    elseif tonumber(major_a) == tonumber(major_b) then
-        if tonumber(minor_a) > tonumber(minor_b) then
-            return true
-        elseif tonumber(minor_a) == tonumber(minor_b) then
-            return tonumber(patch_a) > tonumber(patch_b)
-        end
-    end
-
-    return false
 end
 
 -- Funktion zum Überprüfen, ob alle erforderlichen Dateien vorhanden sind
