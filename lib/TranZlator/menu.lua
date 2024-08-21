@@ -8,7 +8,7 @@ local settingsCategory = menu.list(rootMenu, "Settings", {}, "Configure the Tran
 local translationSettingsCategory = menu.list(settingsCategory, "Translation Settings", {}, "Manage translation settings.")
 local apiSettingsCategory = menu.list(settingsCategory, "API Settings", {}, "Configure API keys and settings.")
 local displaySettingsCategory = menu.list(settingsCategory, "Display Settings", {}, "Manage display options for notifications.")
-local customMessageCategory = menu.list(rootMenu, "Message Translation", {}, "Translate and send a custom message.")  -- Moved to root
+local messageTranslationCategory = menu.list(rootMenu, "Message Translation", {}, "Translate and send a message.")  -- Renamed category
 local credits = menu.list(rootMenu, "Credits", {}, "Visit Cracky's LinkHub for more scripts and resources.")
 
 -- Translation Settings
@@ -673,37 +673,37 @@ menu.text_input(apiSettingsCategory, "DeepL API Key", {"deeplapikey"}, "Enter yo
 end)
 
 -- Display Settings
-local displayOptions = {"Stand Notify", "GTA Notify", "Both"}
+local displayOptions = {"Stand Notify", "GTA Notify", "Both", "Local Chat Only"}
 menu.list_select(displaySettingsCategory, "Display Notification In", {}, "Select where to display the translated notification", displayOptions, 1, function(index)
     displayOption = displayOptions[index]
 end)
 
--- Custom Message
-local customMessageTargetLang = "en"
+-- Message Translation
+local messageTranslationTargetLang = "en"
 local chatOptions = {"All Chat", "Team Chat"}
 local selectedChatOption = 1  -- Default to "Team Chat"
 
 local userMessage = ""  -- Variable to store the user's message
 
-menu.list_select(customMessageCategory, "Target Language", {}, "Select the target language for the custom message", langNames, 1, function(index)
-    customMessageTargetLang = languages[index].code
+menu.list_select(messageTranslationCategory, "Target Language", {}, "Select the target language for the message", langNames, 1, function(index)
+    messageTranslationTargetLang = languages[index].code
 end)
 
 -- Menu option to select the target chat
-menu.list_select(customMessageCategory, "Send Message To", {}, "Select whether to send the message to Team Chat or All Chat", {"Team Chat", "All Chat"}, 1, function(index)
+menu.list_select(messageTranslationCategory, "Send Message To", {}, "Select whether to send the message to Team Chat or All Chat", {"Team Chat", "All Chat"}, 1, function(index)
     selectedChatOption = index
 end)
 
 -- Menu option to input the message
-menu.text_input(customMessageCategory, "Message", {"transmessage"}, "Enter the message to be translated and sent", function(value)
+menu.text_input(messageTranslationCategory, "Message", {"transmessage"}, "Enter the message to be translated and sent", function(value)
     userMessage = value  -- Store the message in the variable
 end)
 
 -- Menu option to send the message
-menu.action(customMessageCategory, "Send Message", {}, "Click to translate and send the message", function()
+menu.action(messageTranslationCategory, "Send Message", {}, "Click to translate and send the message", function()
     if userMessage ~= "" then
         local send_to_all_chat = (selectedChatOption == 2)  -- If 2, send to All Chat, otherwise Team Chat
-        send_translated_message(userMessage, customMessageTargetLang, send_to_all_chat)
+        send_translated_message(userMessage, messageTranslationTargetLang, send_to_all_chat)
     else
         util.toast("Please enter a message before sending.", TOAST_ALL)
     end

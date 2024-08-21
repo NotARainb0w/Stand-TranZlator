@@ -5,6 +5,7 @@ autoTranslateEnabled = true
 displayOption = "Both"  -- By default, both notifications are shown
 selectedAPI = "Google"  -- Default is Google Translate
 targetLang = "en"  -- Default language is English
+localMessagePrefix = "!"  -- Prefix to identify local messages
 
 -- Function to URL-encode a string
 function encode_url(str)
@@ -60,6 +61,13 @@ end
 -- Function to process chat messages
 function handle_chat_message(sender, team, message)
     local sender_name = getPlayerName(sender)
+
+    -- Check if the message has the local prefix
+    if string.sub(message, 1, string.len(localMessagePrefix)) == localMessagePrefix then
+        -- Ignore this message as it was locally generated
+        return
+    end
+
     local formatted_message = string.format("[%s] %s: %s", team, sender_name, message)
 
     if autoTranslateEnabled then
@@ -70,6 +78,10 @@ function handle_chat_message(sender, team, message)
             end
             if displayOption == "GTA Notify" or displayOption == "Both" then
                 display_message_in_local_feed(translatedMessage, sender_name)
+            end
+            if displayOption == "Local Chat Only" then
+                local full_message = localMessagePrefix .. translatedMessage  -- Add prefix to avoid reprocessing
+                chat.send_message(full_message, true, true, false)  -- Display in local Team Chat only
             end
         end
 
@@ -84,8 +96,9 @@ end
 -- Function to translate and send a custom message
 function send_translated_message(message, target_language, send_to_all_chat)
     local translationCallback = function(translatedMessage)
-        if send_to_all_chat then
-            chat.send_message(translatedMessage, false, true, true)  -- Send message to All Chat
+        if displayOption == "Local Chat Only" then
+            local full_message = localMessagePrefix .. translatedMessage  -- Add prefix to avoid reprocessing
+            chat.send_message(full_message, true, true, true)  -- Display in local Team Chat only
         else
             chat.send_message(translatedMessage, true, true, true)  -- Send message to Team Chat
         end
