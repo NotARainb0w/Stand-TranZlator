@@ -1,18 +1,6 @@
--- scripts/lib/TranZlator/menu.lua
+-- language_extension.lua
 
--- Main Menu for TranZlator
-local rootMenu = menu.my_root()
-
--- Categories
-local settingsCategory = menu.list(rootMenu, "Settings", {}, "Configure the TranZlator settings.")
-local translationSettingsCategory = menu.list(settingsCategory, "Translation Settings", {}, "Manage translation settings.")
-local apiSettingsCategory = menu.list(settingsCategory, "API Settings", {}, "Configure API keys and settings.")
-local displaySettingsCategory = menu.list(settingsCategory, "Display Settings", {}, "Manage display options for notifications.")
-local customMessageCategory = menu.list(rootMenu, "Message Translation", {}, "Translate and send a custom message.")  -- Moved to root
-local credits = menu.list(rootMenu, "Credits", {}, "Visit Cracky's LinkHub for more scripts and resources.")
-
--- Translation Settings
-local languages = {
+local extendedLanguages = {
     {code="af", name="Afrikaans"},
     {code="sq", name="Albanian"},
     {code="am", name="Amharic"},
@@ -650,66 +638,42 @@ local languages = {
     {code="zun", name="Zuni"}
 }
 
-local langNames = {}
+
+-- Debugging-Ausgabe der Sprachentabelle
 for i, lang in ipairs(languages) do
-    table.insert(langNames, lang.name)
+    if lang == nil then
+        print("Nil entry in languages table at index " .. tostring(i))
+    elseif lang.code == nil then
+        print("Nil code in languages table at index " .. tostring(i))
+    elseif lang.name == nil then
+        print("Nil name in languages table at index " .. tostring(i))
+    else
+        print("Loaded language: " .. lang.name .. " with code: " .. lang.code)
+    end
 end
 
-menu.toggle(translationSettingsCategory, "Enable/Disable Translation", {"translate"}, "Enable or disable automatic translation of chat messages", function() return autoTranslateEnabled end, function(value)
-    autoTranslateEnabled = value
-end)
-
-menu.list_select(translationSettingsCategory, "Target Language", {}, "Select the target language", langNames, 1, function(index)
-    targetLang = languages[index].code
-end)
-
-menu.list_select(translationSettingsCategory, "Select Translation API", {}, "Choose between Google Translate and DeepL", {"Google", "DeepL"}, 1, function(index)
-    selectedAPI = index == 1 and "Google" or "DeepL"
-end)
-
--- API Settings
-menu.text_input(apiSettingsCategory, "DeepL API Key", {"deeplapikey"}, "Enter your DeepL API key", function(value)
-    deepLApiKey = value
-end)
-
--- Display Settings
-local displayOptions = {"Stand Notify", "GTA Notify", "Both"}
-menu.list_select(displaySettingsCategory, "Display Notification In", {}, "Select where to display the translated notification", displayOptions, 1, function(index)
-    displayOption = displayOptions[index]
-end)
-
--- Custom Message
-local customMessageTargetLang = "en"
-local chatOptions = {"All Chat", "Team Chat"}
-local selectedChatOption = 1  -- Default to "Team Chat"
-
-local userMessage = ""  -- Variable to store the user's message
-
-menu.list_select(customMessageCategory, "Target Language", {}, "Select the target language for the custom message", langNames, 1, function(index)
-    customMessageTargetLang = languages[index].code
-end)
-
--- Menu option to select the target chat
-menu.list_select(customMessageCategory, "Send Message To", {}, "Select whether to send the message to Team Chat or All Chat", {"Team Chat", "All Chat"}, 1, function(index)
-    selectedChatOption = index
-end)
-
--- Menu option to input the message
-menu.text_input(customMessageCategory, "Message", {"transmessage"}, "Enter the message to be translated and sent", function(value)
-    userMessage = value  -- Store the message in the variable
-end)
-
--- Menu option to send the message
-menu.action(customMessageCategory, "Send Message", {}, "Click to translate and send the message", function()
-    if userMessage ~= "" then
-        local send_to_all_chat = (selectedChatOption == 2)  -- If 2, send to All Chat, otherwise Team Chat
-        send_translated_message(userMessage, customMessageTargetLang, send_to_all_chat)
-    else
-        util.toast("Please enter a message before sending.", TOAST_ALL)
+-- Funktion, um die Sprachenliste zu erweitern
+local function extendLanguages(newLanguages)
+    if not newLanguages or type(newLanguages) ~= "table" then
+        error("extendLanguages called with invalid argument")
     end
-end)
 
--- Credits
-menu.hyperlink(credits, "Cracky's LinkHub", "https://home.cracky-drinks.vodka", "Visit Cracky's LinkHub for more scripts and resources.")
+    for _, lang in ipairs(newLanguages) do
+        if lang and lang.code and lang.name then
+            table.insert(languages, lang)
+        else
+            error("Invalid language entry detected in extendLanguages")
+        end
+    end
+end
 
-menu.hyperlink(credits, "TranZlator on GitHub", "https://github.com/Cracky0001/Stand-TranZlator", "Visit the GitHub repository for TranZlator.")
+-- Funktion, um die Sprachenliste zurückzugeben
+local function getLanguages()
+    return languages
+end
+
+-- Exportiere die Funktionen und Daten
+return {
+    getLanguages = getLanguages,
+    extendLanguages = extendLanguages
+}

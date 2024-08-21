@@ -6,6 +6,7 @@ local update_base_url_path_root = "/Cracky0001/Stand-TranZlator/main/"
 local update_base_url_path_lib = "lib/TranZlator/"
 local update_base_url_path_apis = update_base_url_path_lib .. "TranslatorAPIs/"
 
+
 -- Function to check if a URL exists
 local function url_exists(host, path, callback)
     async_http.init(host, path, function(body, headers, status_code)
@@ -161,12 +162,12 @@ local function check_for_update(current_version)
                 if compare_versions(remote_version, current_version) then
                     perform_update()
                 elseif compare_versions(current_version, remote_version) then
-                    util.toast("You are using a developer version (" .. current_version .. ") that has not yet been released.")
+                    util.toast("[TranZlator]\n" .. "You are using a developer version (" .. current_version .. ") that has not yet been released.")
                 else
                     if not check_files_exist() then
                         perform_update()
                     else
-                        util.toast("You are using the latest version.")
+                        util.toast("[TranZlator]\n" .. "You are using the latest version. (" .. current_version .. ")")
                     end
                 end
             else
