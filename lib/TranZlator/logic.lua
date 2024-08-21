@@ -5,7 +5,7 @@ autoTranslateEnabled = true
 displayOption = "Both"  -- By default, both notifications are shown
 selectedAPI = "Google"  -- Default is Google Translate
 targetLang = "en"  -- Default language is English
-localMessagePrefix = "!"  -- Prefix to identify local messages
+localMessagePrefix = "[LOCAL]"  -- Prefix to identify local messages
 
 -- Function to URL-encode a string
 function encode_url(str)
@@ -50,12 +50,16 @@ end
 function display_message_in_stand_notify(sender_name, message)
     local header = "[TranZlator]"
     local full_message = string.format("%s: %s", sender_name, message)
-    util.toast(header .. "\n" .. full_message, TOAST_ALL)
+    util.toast(header .. " " .. full_message, TOAST_ALL)
 end
 
 -- Function to log messages to the console
-function log_message_to_console(message)
-    util.log("[TranZlator] " .. message)
+function log_message_to_console(sender_name, message)
+    -- Präfix, Name des Chatters und die Nachricht in der richtigen Reihenfolge
+    local full_message = string.format("[TranZlator] %s: %s", sender_name, message)
+
+    -- Schreibe die Nachricht in die Konsole
+    util.log(full_message)
 end
 
 -- Function to process chat messages
@@ -72,7 +76,7 @@ function handle_chat_message(sender, team, message)
 
     if autoTranslateEnabled then
         local translationCallback = function(translatedMessage)
-            log_message_to_console(translatedMessage)
+            log_message_to_console(sender_name, translatedMessage) -- Konsolenausgabe nur einmal
             if displayOption == "Stand Notify" or displayOption == "Both" then
                 display_message_in_stand_notify(sender_name, translatedMessage)
             end
@@ -81,7 +85,7 @@ function handle_chat_message(sender, team, message)
             end
             if displayOption == "Local Chat Only" then
                 local full_message = localMessagePrefix .. translatedMessage  -- Add prefix to avoid reprocessing
-                chat.send_message(full_message, true, true, false)  -- Display in local Team Chat only
+                chat.send_message(full_message, true, true, true)  -- Display in local Team Chat only
             end
         end
 
@@ -102,7 +106,7 @@ function send_translated_message(message, target_language, send_to_all_chat)
         else
             chat.send_message(translatedMessage, true, true, true)  -- Send message to Team Chat
         end
-        log_message_to_console(translatedMessage)
+        log_message_to_console(getPlayerName(getLocalPlayerID()), translatedMessage) -- Konsolenausgabe nur einmal
     end
 
     -- API choice check

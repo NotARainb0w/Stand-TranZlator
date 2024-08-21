@@ -3,15 +3,11 @@
 -- Main Menu for TranZlator
 local rootMenu = menu.my_root()
 
--- Categories
+-- Settings Category
 local settingsCategory = menu.list(rootMenu, "Settings", {}, "Configure the TranZlator settings.")
-local translationSettingsCategory = menu.list(settingsCategory, "Translation Settings", {}, "Manage translation settings.")
-local apiSettingsCategory = menu.list(settingsCategory, "API Settings", {}, "Configure API keys and settings.")
-local displaySettingsCategory = menu.list(settingsCategory, "Display Settings", {}, "Manage display options for notifications.")
-local messageTranslationCategory = menu.list(rootMenu, "Message Translation", {}, "Translate and send a message.")  -- Renamed category
-local credits = menu.list(rootMenu, "Credits", {}, "Visit Cracky's LinkHub for more scripts and resources.")
 
 -- Translation Settings
+menu.divider(settingsCategory, "Translation Settings")
 local languages = {
     {code="af", name="Afrikaans"},
     {code="sq", name="Albanian"},
@@ -655,30 +651,34 @@ for i, lang in ipairs(languages) do
     table.insert(langNames, lang.name)
 end
 
-menu.toggle(translationSettingsCategory, "Enable/Disable Translation", {"translate"}, "Enable or disable automatic translation of chat messages", function() return autoTranslateEnabled end, function(value)
+menu.toggle(settingsCategory, "Enable/Disable Translation", {"translate"}, "Enable or disable automatic translation of chat messages", function() return autoTranslateEnabled end, function(value)
     autoTranslateEnabled = value
 end)
 
-menu.list_select(translationSettingsCategory, "Target Language", {}, "Select the target language", langNames, 1, function(index)
+menu.list_select(settingsCategory, "Target Language", {}, "Select the target language", langNames, 1, function(index)
     targetLang = languages[index].code
 end)
 
-menu.list_select(translationSettingsCategory, "Select Translation API", {}, "Choose between Google Translate and DeepL", {"Google", "DeepL"}, 1, function(index)
+menu.list_select(settingsCategory, "Select Translation API", {}, "Choose between Google Translate and DeepL", {"Google", "DeepL"}, 1, function(index)
     selectedAPI = index == 1 and "Google" or "DeepL"
 end)
 
 -- API Settings
-menu.text_input(apiSettingsCategory, "DeepL API Key", {"deeplapikey"}, "Enter your DeepL API key", function(value)
+menu.divider(settingsCategory, "API Settings")
+menu.text_input(settingsCategory, "DeepL API Key", {"deeplapikey"}, "Enter your DeepL API key", function(value)
     deepLApiKey = value
 end)
 
 -- Display Settings
+menu.divider(settingsCategory, "Display Settings")
 local displayOptions = {"Stand Notify", "GTA Notify", "Both", "Local Chat Only"}
-menu.list_select(displaySettingsCategory, "Display Notification In", {}, "Select where to display the translated notification", displayOptions, 1, function(index)
+menu.list_select(settingsCategory, "Display Notification In", {}, "Select where to display the translated notification", displayOptions, 1, function(index)
     displayOption = displayOptions[index]
 end)
 
 -- Message Translation
+local messageTranslationCategory = menu.list(rootMenu, "Message Translation", {}, "Translate and send a message.")
+menu.divider(messageTranslationCategory, "Message Translation")
 local messageTranslationTargetLang = "en"
 local chatOptions = {"All Chat", "Team Chat"}
 local selectedChatOption = 1  -- Default to "Team Chat"
@@ -710,6 +710,8 @@ menu.action(messageTranslationCategory, "Send Message", {}, "Click to translate 
 end)
 
 -- Credits
+local credits = menu.list(rootMenu, "Credits", {}, "Visit Cracky's LinkHub for more scripts and resources.")
+menu.divider(credits, "Credits")
 menu.hyperlink(credits, "Cracky's LinkHub", "https://home.cracky-drinks.vodka", "Visit Cracky's LinkHub for more scripts and resources.")
 
 menu.hyperlink(credits, "TranZlator on GitHub", "https://github.com/Cracky0001/Stand-TranZlator", "Visit the GitHub repository for TranZlator.")

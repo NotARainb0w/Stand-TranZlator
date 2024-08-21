@@ -2,7 +2,7 @@
 
 -------------------------------------
 -- TranZlator by Cracky
--- Version: 1.2.4
+-- Version: 1.2.6
 -- GitHub: https://github.com/Cracky0001/Stand-TranZlator
 -------------------------------------
 
@@ -17,12 +17,15 @@ require('lib.TranZlator.logic')
 local updater = require('lib.TranZlator.updater')
 
 -- Global variables
-verNum = "1.2.5"  -- The current version of the script
+verNum = "1.2.6"  -- The current version of the script
 targetLang = "en"
 autoTranslateEnabled = true
 selectedAPI = "Google"
 deepLApiKey = ""
 translateToTeamChat = false  -- New variable for the Team Chat setting
+consoleOutputEnabled = true  -- Enable or disable console output
+consolePrefixEnabled = true  -- Enable or disable the prefix in console output
+showChatterNameInConsole = true  -- Show the name of the chatter in console output
 
 -- Main function to initialize the script
 local function main()
