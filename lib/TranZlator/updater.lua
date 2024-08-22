@@ -51,7 +51,10 @@ local function check_files_exist()
         "lib/TranZlator/menu.lua",
         "lib/TranZlator/welcomegraphic.lua",
         "lib/TranZlator/TranslatorAPIs/deepl.lua",
-        "lib/TranZlator/TranslatorAPIs/google.lua"
+        "lib/TranZlator/TranslatorAPIs/google.lua",
+        "lib/TranZlator/languages.lua",
+        "lib/TranZlator/updater.lua",
+        "lib/TranZlator/icons.lua"
     }
 
     for _, file_path in ipairs(files_to_check) do
@@ -118,7 +121,10 @@ local function perform_update()
         ["menu.lua"] = "lib/TranZlator/menu.lua",
         ["welcomegraphic.lua"] = "lib/TranZlator/welcomegraphic.lua",
         ["deepl.lua"] = "lib/TranZlator/TranslatorAPIs/deepl.lua",
-        ["google.lua"] = "lib/TranZlator/TranslatorAPIs/google.lua"
+        ["google.lua"] = "lib/TranZlator/TranslatorAPIs/google.lua",
+        ["languages.lua"] = "lib/TranZlator/languages.lua",
+        ["updater.lua"] = "lib/TranZlator/updater.lua",
+        ["icons.lua"] = "lib/TranZlator/icons.lua"
     }
 
     local script_dir = filesystem.scripts_dir()

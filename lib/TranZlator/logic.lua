@@ -5,7 +5,8 @@ autoTranslateEnabled = true
 displayOption = "Both"  -- By default, both notifications are shown
 selectedAPI = "Google"  -- Default is Google Translate
 targetLang = "en"  -- Default language is English
-localMessagePrefix = "[LOCAL]"  -- Prefix to identify local messages
+localMessagePrefix = "!"  -- Prefix to identify local messages
+selectedIcon = "CHAR_MP_STRIPCLUB_PR"  -- Default icon
 
 -- Function to URL-encode a string
 function encode_url(str)
@@ -42,7 +43,7 @@ function display_message_in_local_feed(message, sender_name)
     HUD.THEFEED_SET_BACKGROUND_COLOR_FOR_NEXT_POST(200)  -- Set background color to light blue
     HUD.BEGIN_TEXT_COMMAND_THEFEED_POST("STRING")
     HUD.ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(full_message)
-    HUD.END_TEXT_COMMAND_THEFEED_POST_MESSAGETEXT_WITH_CREW_TAG("CHAR_MP_STRIPCLUB_PR", "CHAR_MP_STRIPCLUB_PR", false, 4, sender_name, "", 1.0, "")
+    HUD.END_TEXT_COMMAND_THEFEED_POST_MESSAGETEXT_WITH_CREW_TAG(selectedIcon, selectedIcon, false, 4, sender_name, "", 1.0, "")
     HUD.END_TEXT_COMMAND_THEFEED_POST_TICKER(false, true)
 end
 
@@ -100,13 +101,12 @@ end
 -- Function to translate and send a custom message
 function send_translated_message(message, target_language, send_to_all_chat)
     local translationCallback = function(translatedMessage)
-        if displayOption == "Local Chat Only" then
-            local full_message = localMessagePrefix .. translatedMessage  -- Add prefix to avoid reprocessing
-            chat.send_message(full_message, true, true, true)  -- Display in local Team Chat only
+        if send_to_all_chat then 
+            chat.send_message(translatedMessage, false, true, true)  -- Send message to All Chat
         else
             chat.send_message(translatedMessage, true, true, true)  -- Send message to Team Chat
         end
-        log_message_to_console(getPlayerName(getLocalPlayerID()), translatedMessage) -- Konsolenausgabe nur einmal
+        log_message_to_console(translatedMessage)
     end
 
     -- API choice check
