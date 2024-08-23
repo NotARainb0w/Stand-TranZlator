@@ -2,7 +2,7 @@
 
 -------------------------------------
 -- TranZlator by Cracky
--- Version: 1.2.7
+-- Version: 1.2.8
 -- GitHub: https://github.com/Cracky0001/Stand-TranZlator
 -------------------------------------
 
@@ -17,7 +17,7 @@ require('lib.TranZlator.logic')
 local updater = require('lib.TranZlator.updater')
 
 -- Global variables
-verNum = "1.2.7"  -- The current version of the script
+verNum = "1.2.8"  -- The current version of the script
 targetLang = "en"
 autoTranslateEnabled = true
 selectedAPI = "Google"
