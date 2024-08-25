@@ -2,6 +2,7 @@
 
 -- Global settings
 autoTranslateEnabled = true
+translate_self = false
 displayOption = "Both"  -- By default, both notifications are shown
 selectedAPI = "Google"  -- Default is Google Translate
 targetLang = "en"  -- Default language is English
@@ -67,6 +68,9 @@ end
 function handle_chat_message(sender, team, message)
     local sender_name = getPlayerName(sender)
 
+    if sender == players.user() and not translate_self then
+        return
+    end
     -- Check if the message has the local prefix
     if string.sub(message, 1, string.len(localMessagePrefix)) == localMessagePrefix then
         -- Ignore this message as it was locally generated

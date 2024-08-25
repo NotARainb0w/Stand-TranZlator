@@ -59,6 +59,10 @@ menu.list_select(settingsCategory, "Select Translation API", {}, "Choose between
     selectedAPI = index == 1 and "Google" or "DeepL"
 end)
 
+settingsCategory:toggle("Translate Self", {"translateself"}, "Translates your own message as well if you toggle this", function (on)
+    translate_self = on
+end)
+
 -- Message Translation
 local messageTranslationCategory = menu.list(rootMenu, "Message Translation", {}, "Translate and send a message.")
 menu.divider(messageTranslationCategory, "Message Translation")
@@ -100,3 +104,4 @@ menu.hyperlink(credits, "TranZlator on GitHub", "https://github.com/Cracky0001/S
 -- Helpers
 menu.divider(credits, "Helpers")
 menu.readonly(credits, "1delay.")
+menu.readonly(credits, "xQueenyx")
